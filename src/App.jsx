@@ -1,32 +1,60 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
+import { useState, useEffect } from 'react'
+import axios from 'axios'
+import { FaTwitter } from 'react-icons/fa'
 import './App.css'
+import Spinner from './components/Spinner'
 
 function App() {
-  const [count, setCount] = useState(0)
 
+
+  const [quotes, setQuotes] = useState([])
+  const [randomQuote, setRandomQuote] = useState({})
+
+
+  useEffect(() => {
+    function getQuotes() {
+
+      const options = {
+        method: 'GET',
+        url: 'https://dummyjson.com/quotes',
+      };
+
+      axios.request(options).then(function (response) {
+        console.log(response.data.quotes);
+        setQuotes(response.data.quotes);
+      }).catch(function (error) {
+        console.error(error);
+      });
+
+    }
+
+    getQuotes()
+
+  }, [])
+
+  useEffect(() => {
+    handleQuote()
+  }, [quotes])
+
+
+  const handleQuote = () => {
+    const item = quotes[Math.floor(Math.random() * quotes.length)];
+    setRandomQuote(item)
+  }
+
+  console.log(randomQuote);
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div id="quote-box" className='card quote'>
+      {quotes.length == 0 ? <Spinner /> : (<div>
+        <blockquote>
+          <p id="text">"{randomQuote?.quote}"</p>
+          <small id="author">{randomQuote?.author}</small>
+        </blockquote>
+      </div>)}
+      <div className="controls">
+        <a href={`https://twitter.com/intent/tweet?hashtags=quotes&related=freecodecamp&text="${encodeURIComponent(randomQuote?.quote)}" ${encodeURIComponent(randomQuote?.author)}`} id='tweet-quote'><FaTwitter /></a>
+        <button id='new-quote' onClick={handleQuote}>Get a new quote</button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </div>
   )
 }
